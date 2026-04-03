@@ -45,6 +45,7 @@ inputs = processor.apply_chat_template(
 inputs.to(model.device)
 
 # Inference: Generation of the output
+# !!!! FUCKING FAILS TO GENERATE TOO... PRN later try what ever I fucking did with Captioner model here?
 generated_ids = model.generate(**inputs, max_new_tokens=128)
 generated_ids_trimmed = [
     out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)

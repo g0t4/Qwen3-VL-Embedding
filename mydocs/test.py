@@ -8,12 +8,13 @@ import torch
 from pathlib import Path
 from pdf2image import convert_from_path
 
-REPO_ROOT = Path(__file__).parent.parent
+cwd = Path.cwd()
+REPO_ROOT = cwd.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-PDFS_DIR = Path(__file__).parent / "docs"
-IMAGES_DIR = Path(__file__).parent / "page_images"
-CACHE_FILE = Path(__file__).parent / "embeddings_cache.npz"
+PDFS_DIR = cwd / "docs"
+IMAGES_DIR = cwd / "page_images"
+CACHE_FILE = cwd / "embeddings_cache.npz"
 IMAGES_DIR.mkdir(exist_ok=True)
 
 print(f"PDFs dir: {PDFS_DIR}")

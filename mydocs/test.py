@@ -106,32 +106,39 @@ def query(text: str, k: int = 5, open_top: bool = True):
 # %%
 # Cell 6: Run queries here — tweak and re-send just this cell
 # results = query("production reports")
-top_k = query("my billing address")
+user_question = "what is my billing address"
+top_k = query(user_question)
 best = all_pages[top_k[0]]
 
 # %% 
 
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
+import torch
 
-# default: Load the model on the available device(s)
+vl_model = "Qwen/Qwen3-VL-2B-Thinking"
 model = Qwen3VLForConditionalGeneration.from_pretrained(
-    "Qwen/Qwen3-VL-2B-Thinking", dtype="auto", device_map="auto"
+    vl_model,
+    dtype=torch.bfloat16,
+    # attn_implementation="flash_attention_2",
+    device_map="auto",
 )
- 
-# TODO flash_attention_2
-# model = Qwen3VLForConditionalGeneration.from_pretrained(
-#     "Qwen/Qwen3-VL-2B-Thinking",
-#     dtype=torch.bfloat16,
-#     attn_implementation="flash_attention_2",
-#     device_map="auto",
-# )
 
-processor = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Thinking")
+processor = AutoProcessor.from_pretrained(vl_model)
 
 # %% 
+user_question = "what is my billing address"
 
 
 messages = [
+    # {
+    #     "role": "system",
+    #     "content": [
+    #         {
+    #             "type": "text", 
+    #             "text": "Thinking: You are a helpful assistant. Analyze the provided image (top embedding result) and answer the user's query based on the content of the image.",
+    #         },
+    #     ],
+    # },
     {
         "role": "user",
         "content": [
@@ -141,7 +148,7 @@ messages = [
             },
             {
                 "type": "text", 
-                "text": "Answer the user's query with the top embedding result pdf page",
+                "text": user_question,
             },
         ],
     }
@@ -156,6 +163,11 @@ inputs = processor.apply_chat_template(
     return_tensors="pt"
 )
 inputs = inputs.to(model.device)
+
+# # TEST if chat template used ... by decoding it
+processor.batch_decode(
+    inputs.input_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False
+)
 
 # Inference: Generation of the output
 generated_ids = model.generate(**inputs, max_new_tokens=128)

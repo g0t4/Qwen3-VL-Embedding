@@ -128,28 +128,39 @@ processor = AutoProcessor.from_pretrained(vl_model)
 # %% 
 user_question = "what is my billing address"
 
-
+# messages = [
+#     # {
+#     #     "role": "system",
+#     #     "content": [
+#     #         {
+#     #             "type": "text", 
+#     #             "text": "Thinking: You are a helpful assistant. Analyze the provided image (top embedding result) and answer the user's query based on the content of the image.",
+#     #         },
+#     #     ],
+#     # },
+#     {
+#         "role": "user",
+#         "content": [
+#             {
+#                 "type": "image",
+#                 "image": str(best['image_path']),
+#             },
+#             {
+#                 "type": "text", 
+#                 "text": user_question,
+#             },
+#         ],
+#     }
+# ]
 messages = [
-    # {
-    #     "role": "system",
-    #     "content": [
-    #         {
-    #             "type": "text", 
-    #             "text": "Thinking: You are a helpful assistant. Analyze the provided image (top embedding result) and answer the user's query based on the content of the image.",
-    #         },
-    #     ],
-    # },
     {
         "role": "user",
         "content": [
             {
                 "type": "image",
-                "image": str(best['image_path']),
+                "image": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg",
             },
-            {
-                "type": "text", 
-                "text": user_question,
-            },
+            {"type": "text", "text": "Describe this image."},
         ],
     }
 ]

@@ -1,0 +1,119 @@
+# %%
+# Cell 1: Imports & paths
+import sys
+import os
+import subprocess
+import numpy as np
+import torch
+from pathlib import Path
+from pdf2image import convert_from_path
+
+REPO_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+PDFS_DIR = Path(__file__).parent / "docs"
+IMAGES_DIR = Path(__file__).parent / "page_images"
+CACHE_FILE = Path(__file__).parent / "embeddings_cache.npz"
+IMAGES_DIR.mkdir(exist_ok=True)
+
+print(f"PDFs dir: {PDFS_DIR}")
+print(f"PDFs found: {[p.name for p in sorted(PDFS_DIR.glob('*.pdf'))]}")
+
+# %%
+# Cell 2: Load embedding model (one-time cost — keep this cell resident in iron.nvim)
+from src.models.qwen3_vl_embedding import Qwen3VLEmbedder
+
+embedder = Qwen3VLEmbedder("Qwen/Qwen3-VL-Embedding-2B")
+print("Embedder ready")
+
+# %%
+# Cell 3: Convert PDFs to page images (skips pages already saved)
+def pdf_to_page_images(pdf_path: Path, output_dir: Path) -> list:
+    pdf_name = pdf_path.stem
+    images = convert_from_path(str(pdf_path))
+    pages = []
+    for page_idx, img in enumerate(images):
+        img_path = output_dir / f"{pdf_name}__page{page_idx + 1:03d}.png"
+        if not img_path.exists():
+            img.save(str(img_path))
+        pages.append({
+            "pdf": pdf_path,
+            "page": page_idx + 1,
+            "image_path": img_path,
+        })
+    return pages
+
+all_pages = []
+for pdf_path in sorted(PDFS_DIR.glob("*.pdf")):
+    pages = pdf_to_page_images(pdf_path, IMAGES_DIR)
+    all_pages.extend(pages)
+    print(f"{pdf_path.name}: {len(pages)} pages")
+
+print(f"\nTotal pages: {len(all_pages)}")
+
+# %%
+# Cell 4: Generate (or load cached) document embeddings
+def build_embeddings(pages, batch_size=4):
+    all_embeddings = []
+    for i in range(0, len(pages), batch_size):
+        batch = pages[i:i + batch_size]
+        inputs = [{"image": str(p["image_path"])} for p in batch]
+        embs = embedder.process(inputs)
+        all_embeddings.append(embs.cpu().float())
+        print(f"  Embedded {min(i + batch_size, len(pages))}/{len(pages)}")
+    return torch.cat(all_embeddings, dim=0).numpy()
+
+cache_paths = [str(p["image_path"]) for p in all_pages]
+
+if CACHE_FILE.exists():
+    cache = np.load(CACHE_FILE, allow_pickle=True)
+    if list(cache["paths"]) == cache_paths:
+        doc_embeddings = cache["embeddings"]
+        print(f"Loaded cached embeddings: {doc_embeddings.shape}")
+    else:
+        print("Cache mismatch (PDFs changed?), rebuilding...")
+        doc_embeddings = build_embeddings(all_pages)
+        np.savez(CACHE_FILE, embeddings=doc_embeddings, paths=np.array(cache_paths))
+        print(f"Built and cached embeddings: {doc_embeddings.shape}")
+else:
+    print("No cache found, building embeddings...")
+    doc_embeddings = build_embeddings(all_pages)
+    np.savez(CACHE_FILE, embeddings=doc_embeddings, paths=np.array(cache_paths))
+    print(f"Built and cached embeddings: {doc_embeddings.shape}")
+
+# %%
+# Cell 5: Query helper — run this cell after editing the query below
+def query(text: str, k: int = 5, open_top: bool = True):
+    q_emb = embedder.process([{"text": text}]).cpu().float().numpy()
+    scores = (q_emb @ doc_embeddings.T)[0]
+    top_k = np.argsort(scores)[-k:][::-1]
+
+    print(f"\nQuery: {text!r}")
+    print("-" * 60)
+    for rank, idx in enumerate(top_k, 1):
+        p = all_pages[idx]
+        print(f"  {rank}. [{scores[idx]:.4f}]  {p['pdf'].name}  —  page {p['page']}")
+        print(f"         {p['image_path']}")
+
+    if open_top:
+        best = all_pages[top_k[0]]
+        print(f"\nOpening top result: {best['image_path'].name}")
+        subprocess.run(["open", str(best["image_path"])])
+
+    return top_k
+
+# %%
+# Cell 6: Run queries here — tweak and re-send just this cell
+results = query("production reports")
+
+# %%
+# Cell 7: Open a specific result by rank (0 = top)
+def open_page(rank: int = 0, top_indices=None):
+    if top_indices is None:
+        print("Pass top_indices from a previous query() call")
+        return
+    p = all_pages[top_indices[rank]]
+    print(f"Opening: {p['pdf'].name}  page {p['page']}")
+    subprocess.run(["open", str(p["image_path"])])
+
+# open_page(1, results)  # open 2nd result

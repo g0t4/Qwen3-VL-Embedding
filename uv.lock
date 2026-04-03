@@ -2185,6 +2185,7 @@ dependencies = [
     { name = "torch" },
     { name = "torchvision" },
     { name = "transformers" },
+    { name = "yapf" },
 ]
 
 [package.metadata]
@@ -2203,6 +2204,7 @@ requires-dist = [
     { name = "torch", specifier = "==2.8.*" },
     { name = "torchvision", specifier = ">=0.23.0" },
     { name = "transformers", specifier = ">=4.57.3" },
+    { name = "yapf", specifier = ">=0.43.0" },
 ]
 
 [[package]]
@@ -2761,6 +2763,18 @@ wheels = [
     { url = "http://mirrors.aliyun.com/pypi/packages/50/55/15a7b8a56590e66ccd374bbfa3f9ffc45b810886c8c3b614e3f90bd2367c/xxhash-3.6.0-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:881b47fc47e051b37d94d13e7455131054b56749b91b508b0907eb07900d1c13" },
     { url = "http://mirrors.aliyun.com/pypi/packages/62/b2/5ac99a041a29e58e95f907876b04f7067a0242cb85b5f39e726153981503/xxhash-3.6.0-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c6dc31591899f5e5666f04cc2e529e69b4072827085c1ef15294d91a004bc1bd" },
     { url = "http://mirrors.aliyun.com/pypi/packages/7b/d9/8d95e906764a386a3d3b596f3c68bb63687dfca806373509f51ce8eea81f/xxhash-3.6.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:15e0dac10eb9309508bfc41f7f9deaa7755c69e35af835db9cb10751adebc35d" },
+]
+
+[[package]]
+name = "yapf"
+version = "0.43.0"
+source = { registry = "http://mirrors.aliyun.com/pypi/simple" }
+dependencies = [
+    { name = "platformdirs" },
+]
+sdist = { url = "http://mirrors.aliyun.com/pypi/packages/23/97/b6f296d1e9cc1ec25c7604178b48532fa5901f721bcf1b8d8148b13e5588/yapf-0.43.0.tar.gz", hash = "sha256:00d3aa24bfedff9420b2e0d5d9f5ab6d9d4268e72afbf59bb3fa542781d5218e" }
+wheels = [
+    { url = "http://mirrors.aliyun.com/pypi/packages/37/81/6acd6601f61e31cfb8729d3da6d5df966f80f374b78eff83760714487338/yapf-0.43.0-py3-none-any.whl", hash = "sha256:224faffbc39c428cb095818cf6ef5511fdab6f7430a10783fdfb292ccf2852ca" },
 ]
 
 [[package]]

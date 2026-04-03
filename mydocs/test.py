@@ -20,8 +20,6 @@ IMAGES_DIR.mkdir(exist_ok=True)
 print(f"PDFs dir: {PDFS_DIR}")
 print(f"PDFs found: {[p.name for p in sorted(PDFS_DIR.glob('*.pdf'))]}")
 
-# %%
-# Cell 2: Load embedding model (one-time cost — keep this cell resident in iron.nvim)
 from src.models.qwen3_vl_embedding import Qwen3VLEmbedder
 
 embedder = Qwen3VLEmbedder("Qwen/Qwen3-VL-Embedding-2B")
@@ -108,16 +106,64 @@ def query(text: str, k: int = 5, open_top: bool = True):
 # %%
 # Cell 6: Run queries here — tweak and re-send just this cell
 # results = query("production reports")
-results = query("my billing address")
+top_k = query("my billing address")
+best = all_pages[top_k[0]]
 
-# %%
-# Cell 7: Open a specific result by rank (0 = top)
-def open_page(rank: int = 0, top_indices=None):
-    if top_indices is None:
-        print("Pass top_indices from a previous query() call")
-        return
-    p = all_pages[top_indices[rank]]
-    print(f"Opening: {p['pdf'].name}  page {p['page']}")
-    subprocess.run(["open", str(p["image_path"])])
+# %% 
 
-# open_page(1, results)  # open 2nd result
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
+
+# default: Load the model on the available device(s)
+model = Qwen3VLForConditionalGeneration.from_pretrained(
+    "Qwen/Qwen3-VL-2B-Thinking", dtype="auto", device_map="auto"
+)
+ 
+# TODO flash_attention_2
+# model = Qwen3VLForConditionalGeneration.from_pretrained(
+#     "Qwen/Qwen3-VL-2B-Thinking",
+#     dtype=torch.bfloat16,
+#     attn_implementation="flash_attention_2",
+#     device_map="auto",
+# )
+
+processor = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Thinking")
+
+# %% 
+
+
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": str(best['image_path']),
+            },
+            {
+                "type": "text", 
+                "text": "Answer the user's query with the top embedding result pdf page",
+            },
+        ],
+    }
+]
+
+# Preparation for inference
+inputs = processor.apply_chat_template(
+    messages,
+    tokenize=True,
+    add_generation_prompt=True,
+    return_dict=True,
+    return_tensors="pt"
+)
+inputs = inputs.to(model.device)
+
+# Inference: Generation of the output
+generated_ids = model.generate(**inputs, max_new_tokens=128)
+generated_ids_trimmed = [
+    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+]
+output_text = processor.batch_decode(
+    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+)
+print(output_text)
+

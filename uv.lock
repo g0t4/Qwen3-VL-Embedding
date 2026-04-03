@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1664,6 +1664,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pdf2image"
+version = "1.17.0"
+source = { registry = "http://mirrors.aliyun.com/pypi/simple" }
+dependencies = [
+    { name = "pillow" },
+]
+sdist = { url = "http://mirrors.aliyun.com/pypi/packages/00/d8/b280f01045555dc257b8153c00dee3bc75830f91a744cd5f84ef3a0a64b1/pdf2image-1.17.0.tar.gz", hash = "sha256:eaa959bc116b420dd7ec415fcae49b98100dda3dd18cd2fdfa86d09f112f6d57" }
+wheels = [
+    { url = "http://mirrors.aliyun.com/pypi/packages/62/33/61766ae033518957f877ab246f87ca30a85b778ebaad65b7f74fa7e52988/pdf2image-1.17.0-py3-none-any.whl", hash = "sha256:ecdd58d7afb810dffe21ef2b1bbc057ef434dabbac6c33778a38a3f7744a27e2" },
+]
+
+[[package]]
 name = "pexpect"
 version = "4.9.0"
 source = { registry = "http://mirrors.aliyun.com/pypi/simple" }
@@ -2166,6 +2178,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "ninja" },
     { name = "opencv-python-headless" },
+    { name = "pdf2image" },
     { name = "qwen-vl-utils" },
     { name = "scipy" },
     { name = "setuptools" },
@@ -2183,6 +2196,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "ninja", specifier = ">=1.13.0" },
     { name = "opencv-python-headless", specifier = ">=4.12.0.88" },
+    { name = "pdf2image", specifier = ">=1.17.0" },
     { name = "qwen-vl-utils", specifier = ">=0.0.14" },
     { name = "scipy", specifier = ">=1.16.3" },
     { name = "setuptools", specifier = ">=80.9.0" },

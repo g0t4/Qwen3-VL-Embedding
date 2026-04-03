@@ -99,13 +99,16 @@ def query(text: str, k: int = 5, open_top: bool = True):
     if open_top:
         best = all_pages[top_k[0]]
         print(f"\nOpening top result: {best['image_path'].name}")
-        subprocess.run(["open", str(best["image_path"])])
+        print("  ", best['image_path'])
+        # subprocess.run(["open", str(best['image_path'])])
+        subprocess.run(["/home/wes/.iterm2/imgcat", str(best['image_path'])])
 
     return top_k
 
 # %%
 # Cell 6: Run queries here — tweak and re-send just this cell
-results = query("production reports")
+# results = query("production reports")
+results = query("my billing address")
 
 # %%
 # Cell 7: Open a specific result by rank (0 = top)

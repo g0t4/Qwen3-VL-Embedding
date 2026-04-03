@@ -110,8 +110,15 @@ user_question = "what is my billing address"
 top_k = query(user_question)
 best = all_pages[top_k[0]]
 
+# !!!! EMBEDDINGS WORK GREAT...
+
+
+
 # %% 
 
+
+# !!! QWEN3 VL infernce is a PIECE OF GIANT HORSE SHIT apparently ... maybe just jump to Qwen3.5 for the answer... or another multimodal... if I cannot fucking get the Qwen3-VL to fucking respond with a fucking input image... WTF
+#  !!!! BTFW ... I am using the goddamn example code on the HF repo ffor Qwne3 VL https://huggingface.co/Qwen/Qwen3-VL-2B-Thinking#using-%F0%9F%A4%97-transformers-to-chat
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
 import torch
 
@@ -129,6 +136,7 @@ processor = AutoProcessor.from_pretrained(vl_model)
 user_question = "what is my billing address"
 
 # messages = [
+#     # can I do system role w/ Qwen3-VL models?
 #     # {
 #     #     "role": "system",
 #     #     "content": [
